@@ -1,0 +1,5 @@
+{
+  "name": "RadCalc Pro",
+  "description": "Calculateur de dosimétrie de précision pour la médecine nucléaire (EANM/CIPR)",
+  "requestFramePermissions": []
+}
