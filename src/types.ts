@@ -47,6 +47,7 @@ export interface VialData {
   activity: number;
   volume: number;
   referenceTime: string; // ISO string or simple HH:mm
+  deadVolume?: number; // mL
 }
 
 export interface CalculationResults {

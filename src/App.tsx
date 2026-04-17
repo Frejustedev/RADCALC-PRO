@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { Activity, Shield, Info, Github } from 'lucide-react';
+import { Activity, Shield, Info, Github, Sun, Moon } from 'lucide-react';
 import { motion } from 'motion/react';
 import { PatientForm } from './components/PatientForm';
 import { IsotopeSelector } from './components/IsotopeSelector';
@@ -15,10 +15,12 @@ import { HistoryList } from './components/HistoryList';
 import { HumanSilhouette } from './components/HumanSilhouette';
 import { Documentation } from './components/Documentation';
 import { SafetyChecklist } from './components/SafetyChecklist';
+import { useTheme } from './ThemeContext';
 import { ISOTOPES, getPediatricMultiplier } from './constants';
 import { PatientData, Isotope, CalculationResults, Unit, VialData, HistoryEntry, Protocol } from './types';
 
 export default function App() {
+  const { theme, toggleTheme } = useTheme();
   const [unit, setUnit] = useState<Unit>('MBq');
   const [patientData, setPatientData] = useState<PatientData>({
     weight: 70,
@@ -33,6 +35,7 @@ export default function App() {
     activity: 3700,
     volume: 10,
     referenceTime: '',
+    deadVolume: 0.1,
   });
 
   const [selectedIsotope, setSelectedIsotope] = useState<Isotope>(ISOTOPES[0]);
@@ -125,7 +128,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#050505] text-slate-200 selection:bg-emerald-500/30 selection:text-emerald-200 print:bg-white print:text-slate-900">
+    <div className="min-h-screen bg-slate-950 text-slate-200 selection:bg-emerald-500/30 selection:text-emerald-200 print:bg-white print:text-slate-900 transition-colors duration-200">
       {/* Header */}
       <header className="border-b border-slate-800 bg-slate-900/50 backdrop-blur-md sticky top-0 z-50 print:hidden">
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
@@ -160,6 +163,14 @@ export default function App() {
               <Shield className="w-4 h-4 text-emerald-400" />
               <span className="text-xs font-medium text-slate-300">Standard EANM / CIPR</span>
             </div>
+
+            <button 
+              onClick={toggleTheme} 
+              className="p-1.5 ml-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition-colors border border-slate-700"
+              title={theme === 'dark' ? "Passer au thème clair" : "Passer au thème sombre"}
+            >
+              {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            </button>
           </div>
         </div>
       </header>

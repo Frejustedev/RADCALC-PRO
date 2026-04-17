@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FlaskConical, Clock, Droplets, Save, Trash2, Box } from 'lucide-react';
+import { FlaskConical, Clock, Droplets, Save, Trash2, Box, Syringe, AlertTriangle } from 'lucide-react';
 import { VialData, Vial } from '../types';
 
 interface VialManagerProps {
@@ -21,12 +21,14 @@ export const VialManager: React.FC<VialManagerProps> = ({ data, onChange, requir
     localStorage.setItem('radcalc_vials', JSON.stringify(vials));
   }, [vials]);
 
-  const volumeToDraw = React.useMemo(() => {
-    if (data.activity <= 0 || data.volume <= 0) return 0;
+  const { volumeToDraw, baseVolume, deadVolume } = React.useMemo(() => {
+    if (data.activity <= 0 || data.volume <= 0) return { volumeToDraw: 0, baseVolume: 0, deadVolume: 0 };
     const concentration = data.activity / data.volume;
-    const vol = requiredActivity / concentration;
+    const baseVol = requiredActivity / concentration;
+    const deadVol = data.deadVolume || 0;
+    const vol = baseVol + deadVol;
     onVolumeCalculated(vol);
-    return vol;
+    return { volumeToDraw: vol, baseVolume: baseVol, deadVolume: deadVol };
   }, [data, requiredActivity, onVolumeCalculated]);
 
   const saveVial = () => {
@@ -95,19 +97,55 @@ export const VialManager: React.FC<VialManagerProps> = ({ data, onChange, requir
         </div>
       </div>
 
-      <div className="mt-6 p-4 bg-purple-500/10 border border-purple-500/20 rounded-xl flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Droplets className="w-6 h-6 text-purple-400" />
-          <div>
-            <span className="text-[10px] uppercase tracking-wider text-purple-400 font-bold block">Volume à Prélever</span>
-            <span className="text-2xl font-mono font-bold text-purple-400">
-              {volumeToDraw > 0 ? volumeToDraw.toFixed(2) : '0.00'} <span className="text-sm font-normal">mL</span>
-            </span>
+      <div className="mt-4 pt-4 border-t border-slate-800/50">
+        <div className="space-y-2 max-w-sm">
+          <label className="text-sm font-medium text-slate-400 flex items-center gap-2">
+            <Syringe className="w-4 h-4 text-rose-400" />
+            Volume Mort Seringue / Cathéter (mL)
+          </label>
+          <input
+            type="number"
+            step="0.05"
+            min="0"
+            value={data.deadVolume ?? 0.1}
+            onChange={(e) => onChange({ ...data, deadVolume: parseFloat(e.target.value) || 0 })}
+            className="w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-2 text-slate-300 focus:ring-2 focus:ring-rose-500 outline-none transition-all"
+            placeholder="0.1"
+          />
+          <p className="text-[10px] text-slate-500 italic">Compense l'activité résiduelle non injectée au patient.</p>
+        </div>
+      </div>
+
+      <div className="mt-6 flex flex-col gap-2">
+        <div className="p-4 bg-purple-500/10 border border-purple-500/20 rounded-xl flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Droplets className="w-6 h-6 text-purple-400" />
+            <div>
+              <span className="text-[10px] uppercase tracking-wider text-purple-400 font-bold block">Volume Total à Prélever</span>
+              <span className="text-2xl font-mono font-bold text-purple-400">
+                {volumeToDraw > 0 ? volumeToDraw.toFixed(2) : '0.00'} <span className="text-sm font-normal">mL</span>
+              </span>
+            </div>
+          </div>
+          <div className="text-right text-[10px] text-slate-500 italic max-w-[150px]">
+            Concentration: {(data.activity / (data.volume || 1)).toFixed(1)} {unit}/mL
           </div>
         </div>
-        <div className="text-right text-[10px] text-slate-500 italic max-w-[150px]">
-          Concentration: {(data.activity / (data.volume || 1)).toFixed(1)} {unit}/mL
-        </div>
+
+        {deadVolume > 0 && volumeToDraw > 0 && (
+           <div className="px-4 py-3 bg-rose-500/10 border border-rose-500/20 rounded-xl flex justify-between items-center">
+              <div className="flex items-center gap-3">
+                 <AlertTriangle className="w-5 h-5 text-rose-400" />
+                 <div className="text-xs text-rose-400">
+                   <span className="font-bold uppercase block tracking-wider mb-0.5">Compensation Incluse</span>
+                   <span>Prélevez <b>{volumeToDraw.toFixed(2)} mL</b> pour injecter précisément <b>{baseVolume.toFixed(2)} mL</b> au patient.</span>
+                 </div>
+              </div>
+              <div className="text-right text-xs text-rose-300 font-mono font-bold">
+                 +{deadVolume.toFixed(2)} mL
+              </div>
+           </div>
+        )}
       </div>
 
       {filteredVials.length > 0 && (
