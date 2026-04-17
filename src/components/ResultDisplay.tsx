@@ -172,10 +172,10 @@ export const ResultDisplay: React.FC<ResultDisplayProps> = ({ results, isotope, 
 
         {/* QR Code Section */}
         {showQR && (
-          <div className="mt-8 p-6 bg-white rounded-xl flex flex-col items-center gap-4 border-2 border-dashed border-slate-200 print:border-none print:p-0">
+          <div className="mt-8 p-6 bg-slate-50 dark:bg-white rounded-xl flex flex-col items-center gap-4 border-2 border-dashed border-slate-200 dark:border-slate-700 print:border-none print:p-0">
             <div className="text-center mb-2 print:hidden">
-              <p className="text-[10px] font-bold uppercase text-slate-400">Étiquette de Seringue</p>
-              <p className="text-xs text-slate-600 font-semibold">{isotope.name} - {protocol.name}</p>
+              <p className="text-[10px] font-bold uppercase text-slate-500">Étiquette de Seringue</p>
+              <p className="text-xs text-slate-700 dark:text-slate-600 font-semibold">{isotope.name} - {protocol.name}</p>
             </div>
             <QRCodeSVG 
               value={qrData} 

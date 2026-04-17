@@ -6,6 +6,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Activity, Shield, Info, Github, Sun, Moon } from 'lucide-react';
 import { motion } from 'motion/react';
+import { Link } from 'react-router-dom';
 import { PatientForm } from './components/PatientForm';
 import { IsotopeSelector } from './components/IsotopeSelector';
 import { DecayCalculator } from './components/DecayCalculator';
@@ -13,14 +14,15 @@ import { ResultDisplay } from './components/ResultDisplay';
 import { VialManager } from './components/VialManager';
 import { HistoryList } from './components/HistoryList';
 import { HumanSilhouette } from './components/HumanSilhouette';
-import { Documentation } from './components/Documentation';
 import { SafetyChecklist } from './components/SafetyChecklist';
+import { LegalModal, LegalPage } from './components/LegalModal';
 import { useTheme } from './ThemeContext';
 import { ISOTOPES, getPediatricMultiplier } from './constants';
 import { PatientData, Isotope, CalculationResults, Unit, VialData, HistoryEntry, Protocol } from './types';
 
 export default function App() {
   const { theme, toggleTheme } = useTheme();
+  const [legalPage, setLegalPage] = useState<LegalPage>(null);
   const [unit, setUnit] = useState<Unit>('MBq');
   const [patientData, setPatientData] = useState<PatientData>({
     weight: 70,
@@ -132,17 +134,21 @@ export default function App() {
       {/* Header */}
       <header className="border-b border-slate-800 bg-slate-900/50 backdrop-blur-md sticky top-0 z-50 print:hidden">
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20">
+          <Link to="/" className="flex items-center gap-3 group">
+            <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20 group-hover:scale-105 transition-transform">
               <Activity className="text-white w-6 h-6" />
             </div>
             <div>
               <h1 className="text-lg font-bold tracking-tight text-slate-100">RadCalc <span className="text-emerald-400">Pro</span></h1>
               <p className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Dosimétrie Médicale</p>
             </div>
-          </div>
+          </Link>
           
           <div className="flex items-center gap-4">
+            <Link to="/" className="text-sm font-semibold hover:text-emerald-500 transition-colors hidden sm:block">
+              Accueil
+            </Link>
+            
             {/* Unit Toggle */}
             <div className="flex bg-slate-800 p-1 rounded-lg border border-slate-700">
               <button 
@@ -286,31 +292,29 @@ export default function App() {
               <div className="mt-8 print:hidden">
                 <HistoryList entries={history} onClear={clearHistory} />
               </div>
-
-              <div className="mt-8 print:hidden">
-                <Documentation />
-              </div>
             </motion.section>
           </div>
         </div>
       </main>
 
       {/* Footer */}
-      <footer className="mt-20 border-t border-slate-800 py-12 bg-slate-900/20 print:hidden">
+      <footer className="mt-20 border-t border-slate-800 py-12 bg-slate-900/20 print:hidden transition-colors duration-300">
         <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-2 text-slate-500 text-sm">
             <Activity className="w-4 h-4" />
             <span>RadCalc Pro v1.1.0 — Outil de Dosimétrie Clinique</span>
           </div>
           <div className="flex gap-8 text-xs text-slate-600 uppercase tracking-widest font-bold">
-            <a href="#" className="hover:text-emerald-400 transition-colors">Confidentialité</a>
-            <a href="#" className="hover:text-emerald-400 transition-colors">Mentions Légales</a>
-            <a href="#" className="hover:text-emerald-400 transition-colors flex items-center gap-1">
-              <Github className="w-3 h-3" /> Source
-            </a>
+            <button onClick={() => setLegalPage('privacy')} className="hover:text-emerald-400 transition-colors">Confidentialité</button>
+            <button onClick={() => setLegalPage('terms')} className="hover:text-emerald-400 transition-colors">Mentions Légales</button>
+            <button onClick={() => setLegalPage('source')} className="hover:text-emerald-400 transition-colors flex items-center gap-1">
+              <Github className="w-3 h-3" /> Developpeur
+            </button>
           </div>
         </div>
       </footer>
+      
+      <LegalModal page={legalPage} onClose={() => setLegalPage(null)} />
     </div>
   );
 }

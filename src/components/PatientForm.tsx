@@ -45,6 +45,13 @@ export const PatientForm: React.FC<PatientFormProps> = ({ data, onChange }) => {
           <h2 className="text-xl font-semibold text-slate-100">Données Patient</h2>
         </div>
         <div className="flex gap-2">
+          <button 
+            onClick={() => onChange({ weight: 70, height: 175, age: 45, gender: 'M', bsa: 1.85, isPediatric: false })}
+            className="px-2 py-1.5 text-[10px] uppercase font-bold text-slate-500 hover:text-slate-300 bg-slate-800/50 hover:bg-slate-800 rounded-lg border border-slate-700/50 transition-all"
+            title="Réinitialiser"
+          >
+            Reset
+          </button>
           <div className="flex bg-slate-800 p-1 rounded-lg border border-slate-700">
             <button 
               onClick={() => handleChange('gender', 'M')}
