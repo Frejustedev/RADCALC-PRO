@@ -3,6 +3,31 @@
 RadCalc Pro utilise **Firebase Authentication** (comptes) et **Cloud Firestore** (base de
 données : patients, examens, flacons, comptes). Déploiement **mono-centre**.
 
+---
+
+## ✅ Déjà configuré automatiquement (déploiement actuel)
+
+- **Projet Firebase** : `gen-lang-client-0346429614` (« RADCALC PRO »).
+- **Base Firestore** : réutilise la base existante `ai-studio-77e401c9-…` (Native, `nam5`) via
+  `VITE_FIREBASE_DATABASE_ID` — pas besoin d'activer la facturation.
+- **Règles de sécurité** (`firestore.rules`) : **déployées**.
+- **Variables d'environnement Vercel** (projet `radcalc-pro`, production) : **renseignées**.
+
+## ⚠️ À FAIRE par toi (2 réglages console, ~2 min) — sinon la connexion échoue
+
+Ces deux réglages d'Authentication ne sont pas scriptables sans `gcloud` :
+
+1. **Activer la méthode de connexion** : Firebase Console → **Authentication** → *Sign-in method*
+   → activer **E-mail/Mot de passe**.
+2. **Autoriser les domaines** : Authentication → *Settings* → **Domaines autorisés** → ajouter
+   `radcalc.nucleatlas.org` **et** `radcalc-pro.vercel.app`.
+
+Puis crée le **premier admin** (section 4 ci-dessous).
+
+---
+
+## Mise en place complète (référence / nouveau déploiement)
+
 ## 1. Créer le projet Firebase
 
 1. Aller sur https://console.firebase.google.com → **Ajouter un projet** (ex. `imena-radcalc`).
