@@ -1,8 +1,11 @@
 import React from 'react';
-import { Activity, Shield, ArrowRight, Zap, Database, Smartphone, BookOpen, Layers } from 'lucide-react';
+import { Shield, Zap, Database, Smartphone, BookOpen, Layers, Activity } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { useTheme } from '../ThemeContext';
+import { Navbar } from '../components/Navbar';
+import { focusRing } from '../components/ui';
+import { cn } from '../lib/cn';
 
 export const Landing: React.FC = () => {
   const { theme } = useTheme();
@@ -16,29 +19,15 @@ export const Landing: React.FC = () => {
       </div>
 
       <div className="relative z-10">
-        {/* Navbar */}
-        <nav className={`border-b ${theme === 'dark' ? 'border-slate-800 bg-slate-900/50' : 'border-slate-200 bg-white/50'} backdrop-blur-md sticky top-0`}>
-          <div className="max-w-7xl mx-auto px-4 h-20 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-gradient-to-tr from-emerald-500 to-emerald-400 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20">
-                <Activity className="text-white w-7 h-7" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-black tracking-tight">RadCalc <span className="text-emerald-500">Pro</span></h1>
-                <p className={`text-[10px] uppercase tracking-widest font-bold ${theme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>NucleaTech Solutions</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-6">
-              <Link to="/docs" className={`text-sm font-semibold hover:text-emerald-500 transition-colors ${theme === 'dark' ? 'text-slate-300' : 'text-slate-600'}`}>
-                Documentation
-              </Link>
-              <Link to="/app" className="bg-emerald-500 hover:bg-emerald-400 text-white px-5 py-2.5 rounded-full font-bold text-sm transition-all shadow-lg shadow-emerald-500/20 flex items-center gap-2">
-                Ouvrir l'outil <ArrowRight className="w-4 h-4" />
-              </Link>
-            </div>
-          </div>
-        </nav>
+        <a
+          href="#main"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[100] focus:px-4 focus:py-2 focus:rounded-lg focus:bg-emerald-600 focus:text-white focus:font-bold"
+        >
+          Aller au contenu
+        </a>
+        <Navbar />
 
+        <main id="main">
         {/* Hero Section */}
         <div className="max-w-7xl mx-auto px-4 pt-24 pb-32">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
@@ -49,7 +38,7 @@ export const Landing: React.FC = () => {
               className="space-y-8"
             >
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-xs font-bold uppercase tracking-wider">
-                <Shield className="w-4 h-4" /> Version 1.1.0 • EANM & ICRP Compliant
+                <Shield className="w-4 h-4" /> Version 1.3.0 • EANM & ICRP Compliant
               </div>
               <h2 className="text-5xl lg:text-7xl font-black leading-[1.1] tracking-tight">
                 La Dosimétrie Clinique <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-500">Réinventée.</span>
@@ -59,10 +48,10 @@ export const Landing: React.FC = () => {
               </p>
               
               <div className="flex flex-col sm:flex-row gap-4 pt-4">
-                <Link to="/app" className="bg-emerald-500 hover:bg-emerald-400 text-white px-8 py-4 rounded-full font-bold text-lg transition-all shadow-xl shadow-emerald-500/20 flex items-center justify-center gap-2">
+                <Link to="/app" className={cn('bg-emerald-600 hover:bg-emerald-500 text-white px-8 py-4 rounded-full font-bold text-lg transition-all shadow-xl shadow-emerald-500/20 flex items-center justify-center gap-2', focusRing)}>
                   Lancer l'Application
                 </Link>
-                <Link to="/docs" className={`px-8 py-4 rounded-full font-bold text-lg transition-all flex items-center justify-center gap-2 border ${theme === 'dark' ? 'bg-slate-800/50 hover:bg-slate-800 border-slate-700 text-slate-200' : 'bg-white hover:bg-slate-50 border-slate-200 text-slate-700'}`}>
+                <Link to="/docs" className={cn('px-8 py-4 rounded-full font-bold text-lg transition-all flex items-center justify-center gap-2 border', focusRing, theme === 'dark' ? 'bg-slate-800/50 hover:bg-slate-800 border-slate-700 text-slate-200' : 'bg-white hover:bg-slate-50 border-slate-200 text-slate-700')}>
                   Lire la Documentation
                 </Link>
               </div>
@@ -101,7 +90,7 @@ export const Landing: React.FC = () => {
               </div>
 
               {/* Floating badges */}
-              <div className="absolute -right-6 top-20 bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700 flex items-center gap-3 animate-bounce" style={{animationDuration: '3s'}}>
+              <div className="absolute -right-6 top-20 bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700 flex items-center gap-3 animate-bounce motion-reduce:animate-none" style={{animationDuration: '3s'}}>
                 <div className="p-2 bg-indigo-500/10 rounded-lg text-indigo-500">
                   <Database className="w-6 h-6" />
                 </div>
@@ -111,7 +100,7 @@ export const Landing: React.FC = () => {
                 </div>
               </div>
 
-              <div className="absolute -left-8 bottom-20 bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700 flex items-center gap-3 animate-bounce" style={{animationDuration: '4s', animationDelay: '1s'}}>
+              <div className="absolute -left-8 bottom-20 bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700 flex items-center gap-3 animate-bounce motion-reduce:animate-none" style={{animationDuration: '4s', animationDelay: '1s'}}>
                 <div className="p-2 bg-amber-500/10 rounded-lg text-amber-500">
                   <Zap className="w-6 h-6" />
                 </div>
@@ -154,6 +143,7 @@ export const Landing: React.FC = () => {
             </div>
           </div>
         </div>
+        </main>
       </div>
     </div>
   );

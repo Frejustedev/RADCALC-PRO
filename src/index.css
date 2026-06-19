@@ -1,9 +1,13 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
 @import "tailwindcss";
 
+/*
+ * Fonts use the system stack so the PWA renders identically offline (no
+ * render-blocking remote font fetch). "Inter"/"JetBrains Mono" are used only
+ * if already installed locally; otherwise the native UI fonts apply.
+ */
 @theme {
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, "Cascadia Code", Consolas, monospace;
 }
 
 @layer base {
@@ -24,6 +28,19 @@
     --color-slate-200: #1e293b;
     --color-slate-100: #0f172a;
     --color-slate-50: #020617;
+  }
+
+  /*
+   * Accent "-400/-500" tokens are tuned for dark surfaces; on light surfaces they fail
+   * WCAG contrast. Darken them for LIGHT MODE ONLY (:root:not(.dark)) so dark mode keeps
+   * the vivid Tailwind defaults.
+   */
+  :root:not(.dark) {
+    --color-emerald-400: #047857;
+    --color-emerald-500: #059669;
+    --color-indigo-400: #4f46e5;
+    --color-amber-400: #b45309;
+    --color-rose-400: #e11d48;
   }
 
   :root.dark {
@@ -53,5 +70,36 @@
 
 ::-webkit-scrollbar-thumb {
   @apply bg-slate-800 rounded-full hover:bg-slate-700 transition-colors;
+}
+
+/* Horizontal nav strips: hide the scrollbar but keep scrolling */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Respect reduced-motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@media print {
+  body {
+    background: #ffffff;
+    color: #0f172a;
+  }
 }
 

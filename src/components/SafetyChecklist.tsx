@@ -4,15 +4,15 @@ import { CheckCircle2, AlertCircle } from 'lucide-react';
 interface SafetyChecklistProps {
   isPregnant?: boolean;
   isPediatric?: boolean;
-  egfr?: number;
+  clcr?: number;
 }
 
-export const SafetyChecklist: React.FC<SafetyChecklistProps> = ({ isPregnant, isPediatric, egfr }) => {
+export const SafetyChecklist: React.FC<SafetyChecklistProps> = ({ isPregnant, isPediatric, clcr }) => {
   const checks = [
     { label: "Identité patient vérifiée", status: "pending" },
     { label: "Grossesse exclue", status: isPregnant ? "error" : "success" },
     { label: "Consentement éclairé signé", status: "pending" },
-    { label: "Fonction rénale compatible", status: egfr && egfr < 30 ? "error" : "success" },
+    { label: "Fonction rénale compatible", status: clcr && clcr < 30 ? "error" : "success" },
     { label: "Protocole pédiatrique validé", status: isPediatric ? "warning" : "success" },
   ];
 

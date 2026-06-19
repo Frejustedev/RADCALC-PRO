@@ -1,0 +1,112 @@
+rules_version = '2';
+
+// RadCalc Pro — IMeNA (Côte d'Ivoire). Single-center role-based access control.
+// Roles: admin, medecin, radiopharmacien, manipulateur, lecteur.
+// The rules gate BOTH who can write AND what may change (field/key-level integrity),
+// because these are medical records (dosimetry, validation, audit attribution).
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+    function userDocPath() {
+      return /databases/$(database)/documents/users/$(request.auth.uid);
+    }
+    function hasProfile() {
+      return signedIn() && exists(userDocPath());
+    }
+    function profile() {
+      return get(userDocPath()).data;
+    }
+    function isActive() {
+      return hasProfile() && profile().active == true;
+    }
+    function role() {
+      return isActive() ? profile().role : 'none';
+    }
+    function isAdmin() {
+      return role() == 'admin';
+    }
+    function hasAnyRole(roles) {
+      return isActive() && (role() in roles);
+    }
+    function isValidRole(r) {
+      return r in ['admin', 'medecin', 'radiopharmacien', 'manipulateur', 'lecteur'];
+    }
+    // Keys touched by a write must be a subset of the allowed set.
+    function changedKeys() {
+      return request.resource.data.diff(resource.data).affectedKeys();
+    }
+
+    // ── Users ──────────────────────────────────────────────────────────────
+    match /users/{uid} {
+      // Self-registration: own doc only, fixed lowest role, inactive, locked shape,
+      // and the email must match the authenticated token (no impersonation).
+      allow create: if signedIn()
+        && request.auth.uid == uid
+        && request.resource.data.role == 'manipulateur'
+        && request.resource.data.active == false
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.displayName is string
+        && request.resource.data.createdAt is string
+        && request.resource.data.keys().hasOnly(['email', 'displayName', 'role', 'active', 'createdAt']);
+
+      // A user reads their own profile (to learn activation status); admins read all.
+      allow get: if signedIn() && (request.auth.uid == uid || isAdmin());
+      allow list: if isAdmin();
+
+      // Admins manage role/activation only; email & createdAt are immutable, role validated.
+      allow update: if isAdmin()
+        && isValidRole(request.resource.data.role)
+        && request.resource.data.active is bool
+        && request.resource.data.email == resource.data.email
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.keys().hasOnly(['email', 'displayName', 'role', 'active', 'createdAt']);
+      allow delete: if isAdmin();
+    }
+
+    // ── Patients ───────────────────────────────────────────────────────────
+    match /patients/{id} {
+      allow read: if hasAnyRole(['admin', 'medecin', 'radiopharmacien', 'manipulateur', 'lecteur']);
+      // Creator is bound to the caller.
+      allow create: if hasAnyRole(['admin', 'medecin', 'radiopharmacien', 'manipulateur'])
+        && request.resource.data.createdBy == request.auth.uid;
+      // Provenance is frozen on update.
+      allow update: if hasAnyRole(['admin', 'medecin', 'radiopharmacien', 'manipulateur'])
+        && request.resource.data.createdBy == resource.data.createdBy
+        && request.resource.data.createdAt == resource.data.createdAt;
+      allow delete: if hasAnyRole(['admin', 'medecin', 'radiopharmacien', 'manipulateur']);
+    }
+
+    // ── Exams ──────────────────────────────────────────────────────────────
+    match /exams/{id} {
+      allow read: if isActive();
+      // Performer bound to caller; new exams start as drafts.
+      allow create: if hasAnyRole(['admin', 'medecin', 'radiopharmacien', 'manipulateur'])
+        && request.resource.data.performedBy == request.auth.uid
+        && request.resource.data.status == 'draft';
+      // ONLY a one-way draft→validated transition; the validator is pinned and every
+      // dosimetry/audit field is frozen (hasOnly on the changed keys).
+      allow update: if hasAnyRole(['admin', 'medecin', 'radiopharmacien'])
+        && resource.data.status == 'draft'
+        && request.resource.data.status == 'validated'
+        && request.resource.data.validatedBy == request.auth.uid
+        && changedKeys().hasOnly(['status', 'validatedBy', 'validatedByName', 'validatedAt']);
+      allow delete: if isAdmin();
+    }
+
+    // ── Vials (shared inventory) ─────────────────────────────────────────────
+    match /vials/{id} {
+      allow read: if isActive();
+      allow create: if hasAnyRole(['admin', 'radiopharmacien'])
+        && request.resource.data.createdBy == request.auth.uid;
+      allow update, delete: if hasAnyRole(['admin', 'radiopharmacien']);
+    }
+
+    // Deny everything else by default.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

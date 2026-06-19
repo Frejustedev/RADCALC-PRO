@@ -16,24 +16,23 @@ export const LegalModal: React.FC<LegalModalProps> = ({ page, onClose }) => {
       title: "Politique de Confidentialité",
       body: (
         <div className="space-y-4 text-sm text-slate-300">
-          <p>La protection de vos données et le respect du secret médical sont notre priorité absolue. L'application <strong>RadCalc Pro</strong> a été conçue selon le principe du "Privacy by Design".</p>
-          
-          <h3 className="text-emerald-400 font-bold mt-4 text-base">1. Stockage Local Exclusif</h3>
-          <p>Toutes les données saisies dans l'application :</p>
+          <p>La protection des données et le respect du secret médical sont une priorité. RadCalc Pro est déployé pour un <strong>centre unique (IMeNA, Côte d'Ivoire)</strong> et utilise une base de données cloud sécurisée (Google Firebase).</p>
+
+          <h3 className="text-emerald-400 font-bold mt-4 text-base">1. Données enregistrées</h3>
           <ul className="list-disc pl-5 space-y-1">
-            <li>Données patients (poids, âge, taille, sexe, clairance, grossesse)</li>
-            <li>Historiques des calculs radiopharmaceutiques</li>
-            <li>Inventaires et caractéristiques des flacons</li>
+            <li>Dossiers patients (identité, biométrie, clairance, statut grossesse/allaitement)</li>
+            <li>Examens et calculs dosimétriques réalisés</li>
+            <li>Inventaire des flacons du service</li>
+            <li>Comptes utilisateurs et rôles</li>
           </ul>
-          <p>sont traitées et stockées <strong>exclusivement en local</strong> sur votre appareil via le stockage du navigateur (LocalStorage).</p>
-          
-          <h3 className="text-emerald-400 font-bold mt-4 text-base">2. Zéro Transmission de Données</h3>
-          <p><strong>Aucune donnée médicale, aucune information patient, ni aucune statistique d'utilisation n'est transmise d'aucune manière à un serveur distant.</strong> L'application fonctionne de manière isolée et peut être utilisée 100% hors-ligne (en tant que PWA).</p>
-          
+
+          <h3 className="text-emerald-400 font-bold mt-4 text-base">2. Stockage cloud sécurisé et contrôle d'accès</h3>
+          <p>Les données sont stockées dans <strong>Cloud Firestore (Google Firebase)</strong>, protégées par une authentification obligatoire et des règles de sécurité qui restreignent l'accès <strong>au seul personnel autorisé du centre</strong>, selon son rôle (médecin, radiopharmacien, manipulateur…). Un cache local chiffré par le navigateur permet le fonctionnement hors-ligne, avec synchronisation au retour du réseau.</p>
+
           <h3 className="text-emerald-400 font-bold mt-4 text-base">3. Conformité</h3>
-          <p>De par son architecture entièrement hors-ligne et locale, RadCalc Pro garantit la confidentialité totale et facilite naturellement votre conformité aux réglementations strictes sur la protection des données de santé (RGPD, HIPAA, secret médical, etc.).</p>
+          <p>Le responsable de traitement est le centre (IMeNA). Il lui appartient de définir la base légale, la durée de conservation et les droits des personnes, conformément à la réglementation applicable (protection des données de santé, secret médical, RGPD le cas échéant). Aucune donnée n'est revendue ni utilisée à des fins publicitaires.</p>
           <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl mt-4">
-            <p className="text-xs text-emerald-300 font-mono text-center">🔐 Vos données ne quittent jamais cette tablette/ordinateur.</p>
+            <p className="text-xs text-emerald-300 font-mono text-center">🔐 Accès restreint au personnel autorisé du centre, par authentification et rôles.</p>
           </div>
         </div>
       )

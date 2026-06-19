@@ -1,15 +1,15 @@
 import React from 'react';
-import { BookOpen, ExternalLink, Shield, ArrowLeft, Beaker } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { ExternalLink, Shield, Beaker } from 'lucide-react';
 import { useTheme } from '../ThemeContext';
+import { Navbar } from '../components/Navbar';
 
 export const DocumentationPage: React.FC = () => {
   const { theme } = useTheme();
 
   const sources = [
     {
-      title: "EANM Pediatric Dosage Card (2016)",
-      description: "Utilisé comme standard or pour le calcul des multiplicateurs d'activité en pédiatrie basés sur le poids corporel (Classes A, B, C). Permet une administration minimale 'As Low As Reasonably Achievable'.",
+      title: "EANM Pediatric Dosage Card v5.7 (2016)",
+      description: "Activité administrée = Activité de base (MBq) × Multiplicateur(poids), selon la classe du radiopharmaceutique (A, B ou C — trois colonnes distinctes), puis application de l'activité minimale recommandée. Optimisation ALARA.",
       link: "https://www.eanm.org/publications/dosage-calculator/",
       category: "Pédiatrie & ALARA",
       color: "text-amber-400",
@@ -18,7 +18,7 @@ export const DocumentationPage: React.FC = () => {
     },
     {
       title: "ICRP Publication 128",
-      description: "Source exclusive des coefficients de dose efficace (mSv/MBq) et des doses spécifiques par organe pour les produits radiopharmaceutiques utilisés en diagnostic et thérapie.",
+      description: "Coefficients de dose efficace (mSv/MBq). Les coefficients par organe sont des doses ABSORBÉES en mGy/MBq (≠ dose efficace). Pour l'I-131 iodure, la dose efficace dépend fortement du blocage thyroïdien (≈0,24 thyroïde bloquée vs ≈22 mSv/MBq thyroïde fonctionnelle).",
       link: "https://www.icrp.org/publication.asp?id=ICRP%20Publication%20128",
       category: "Dosimétrie Organes",
       color: "text-emerald-400",
@@ -36,7 +36,7 @@ export const DocumentationPage: React.FC = () => {
     },
     {
       title: "Formule de Cockcroft-Gault",
-      description: "Estimation directe de la clairance de la créatinine (ClCr) pour l'ajustement dynamique des doses en cas d'insuffisance rénale (ex: MAG3, DMSA). Modulée physiologiquement par le genre et le poids idéal.",
+      description: "Estimation de la clairance de la créatinine (ClCr, ml/min) pour l'ajustement des doses en cas d'insuffisance rénale (ex: MAG3). Calculée à partir de l'âge, du poids corporel, du genre et de la créatininémie (µmol/L). NB : il s'agit d'une clairance, non d'un DFG normalisé /1,73 m².",
       link: null,
       category: "Néphrologie Physiologique",
       color: "text-rose-400",
@@ -56,18 +56,7 @@ export const DocumentationPage: React.FC = () => {
 
   return (
     <div className={`min-h-screen transition-colors duration-300 ${theme === 'dark' ? 'bg-slate-950 text-slate-200' : 'bg-slate-50 text-slate-900'} pb-24`}>
-      {/* Header */}
-      <header className={`border-b ${theme === 'dark' ? 'border-slate-800 bg-slate-900/50' : 'border-slate-200 bg-white/50'} backdrop-blur-md sticky top-0 z-50`}>
-        <div className="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
-          <Link to="/" className={`flex items-center gap-2 text-sm font-semibold transition-colors ${theme === 'dark' ? 'text-slate-400 hover:text-white' : 'text-slate-500 hover:text-slate-900'}`}>
-            <ArrowLeft className="w-4 h-4" /> Retour au portail
-          </Link>
-          <div className="flex items-center gap-2">
-            <BookOpen className="w-5 h-5 text-indigo-500" />
-            <h1 className="text-lg font-bold tracking-tight">Documentation Scientifique</h1>
-          </div>
-        </div>
-      </header>
+      <Navbar />
 
       <main className="max-w-4xl mx-auto px-4 pt-12">
         <div className="mb-12 text-center space-y-4">
@@ -90,11 +79,11 @@ export const DocumentationPage: React.FC = () => {
                       {source.category}
                     </span>
                     {source.link && (
-                      <a 
-                        href={source.link} 
-                        target="_blank" 
+                      <a
+                        href={source.link}
+                        target="_blank"
                         rel="noopener noreferrer"
-                        className={`transition-colors flex items-center gap-1 text-xs font-bold ${theme === 'dark' ? 'text-slate-500 hover:text-indigo-400' : 'text-slate-400 hover:text-indigo-600'}`}
+                        className={`transition-colors flex items-center gap-1 text-xs font-bold rounded outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ${theme === 'dark' ? 'text-slate-400 hover:text-indigo-400' : 'text-slate-500 hover:text-indigo-600'}`}
                       >
                         Consulter <ExternalLink className="w-3 h-3" />
                       </a>

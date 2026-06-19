@@ -48,7 +48,6 @@ export const HumanSilhouette: React.FC<HumanSilhouetteProps> = ({ isotope, activ
             const config = organMap[od.organ];
             if (!config) return null;
 
-            const dose = activity * od.coefficient;
             const isHovered = hoveredOrgan === od.organ;
 
             if (bilateralOrgans.includes(od.organ)) {
@@ -117,8 +116,8 @@ export const HumanSilhouette: React.FC<HumanSilhouetteProps> = ({ isotope, activ
             >
               <p className="text-[10px] font-bold text-slate-500 uppercase mb-1">{hoveredOrgan}</p>
               <p className="text-lg font-mono font-bold text-emerald-400">
-                {(activity * (activeOrgans.find(o => o.organ === hoveredOrgan)?.coefficient || 0)).toFixed(2)}
-                <span className="text-xs ml-1 font-normal text-slate-500">mSv</span>
+                {(activity * (activeOrgans.find(o => o.organ === hoveredOrgan)?.coefficientMGyPerMBq || 0)).toFixed(2)}
+                <span className="text-xs ml-1 font-normal text-slate-500">mGy</span>
               </p>
             </motion.div>
           )}
