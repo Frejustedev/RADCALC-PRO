@@ -32,18 +32,26 @@ let app: FirebaseApp | undefined;
 let authInstance: Auth | undefined;
 let dbInstance: Firestore | undefined;
 
+// Optional non-default Firestore database id (this deployment reuses the existing
+// AI-Studio-provisioned database rather than a billed "(default)" one).
+const databaseId = import.meta.env.VITE_FIREBASE_DATABASE_ID;
+
 if (isFirebaseConfigured) {
   app = getApps().length ? getApps()[0] : initializeApp(config as Record<string, string>);
   authInstance = getAuth(app);
+  const settings = {
+    localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }),
+    // Drop undefined fields at the SDK level (Firestore rejects them otherwise).
+    ignoreUndefinedProperties: true,
+  };
   try {
-    dbInstance = initializeFirestore(app, {
-      localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }),
-      // Drop undefined fields at the SDK level (Firestore rejects them otherwise).
-      ignoreUndefinedProperties: true,
-    });
+    dbInstance = databaseId
+      ? initializeFirestore(app, settings, databaseId)
+      : initializeFirestore(app, settings);
   } catch {
     // IndexedDB unavailable (private mode, disabled storage) → degrade to online-only.
-    dbInstance = initializeFirestore(app, { ignoreUndefinedProperties: true });
+    const fallback = { ignoreUndefinedProperties: true };
+    dbInstance = databaseId ? initializeFirestore(app, fallback, databaseId) : initializeFirestore(app, fallback);
   }
 }
 
