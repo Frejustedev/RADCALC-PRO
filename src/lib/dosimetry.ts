@@ -293,7 +293,8 @@ export const isDoseAboveAlert = (
   effectiveDoseMSv: number,
   isotope: Isotope,
   protocol?: Protocol,
-): boolean => !isTherapeuticProtocol(isotope, protocol) && effectiveDoseMSv > DIAGNOSTIC_DOSE_ALERT_MSV;
+  thresholdMSv: number = DIAGNOSTIC_DOSE_ALERT_MSV,
+): boolean => !isTherapeuticProtocol(isotope, protocol) && effectiveDoseMSv > thresholdMSv;
 
 /**
  * Organ absorbed-dose coefficients for the scenario. For I-131 the thyroid coefficient

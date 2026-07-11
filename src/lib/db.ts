@@ -15,8 +15,9 @@ import {
   QuerySnapshot,
   DocumentData,
 } from 'firebase/firestore';
+import { setDoc } from 'firebase/firestore';
 import { db } from './firebase';
-import { Patient, Exam, Vial, UserProfile, ExamStatus, ExamAdministration, SafetyChecks } from '../types';
+import { Patient, Exam, Vial, UserProfile, ExamStatus, ExamAdministration, SafetyChecks, CenterConfig } from '../types';
 import { Role } from './roles';
 
 /** Remove undefined fields — Firestore rejects them. */
@@ -147,3 +148,15 @@ export const setUserRole = (uid: string, role: Role): Promise<void> =>
 
 export const setUserActive = (uid: string, active: boolean): Promise<void> =>
   updateDoc(doc(db, 'users', uid), { active });
+
+// ── Center config (DRLs / thresholds — admin editable) ────────────────────────
+
+export const subscribeConfig = (cb: (c: CenterConfig) => void, onError?: (e: Error) => void) =>
+  onSnapshot(doc(db, 'config', 'center'), (s) => cb(s.exists() ? (s.data() as CenterConfig) : {}), onError);
+
+export const saveConfig = (patch: Partial<CenterConfig>, actor: Actor): Promise<void> =>
+  setDoc(
+    doc(db, 'config', 'center'),
+    clean({ ...patch, updatedBy: actor.uid, updatedByName: actor.name, updatedAt: new Date().toISOString() }),
+    { merge: true },
+  );

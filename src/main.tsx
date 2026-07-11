@@ -14,6 +14,7 @@ import { ErrorBoundary } from './components/ErrorBoundary.tsx';
 import './index.css';
 import { ThemeProvider } from './ThemeContext';
 import { AuthProvider } from './lib/AuthContext';
+import { ConfigProvider } from './lib/ConfigContext';
 import { ActivePatientProvider } from './lib/ActivePatientContext';
 
 const ScrollToTop = () => {
@@ -29,6 +30,7 @@ createRoot(document.getElementById('root')!).render(
     <ErrorBoundary>
       <ThemeProvider>
         <AuthProvider>
+          <ConfigProvider>
           <ActivePatientProvider>
             <BrowserRouter>
               <ScrollToTop />
@@ -45,6 +47,7 @@ createRoot(document.getElementById('root')!).render(
               </Routes>
             </BrowserRouter>
           </ActivePatientProvider>
+          </ConfigProvider>
         </AuthProvider>
       </ThemeProvider>
     </ErrorBoundary>

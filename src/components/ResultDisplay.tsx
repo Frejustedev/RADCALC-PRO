@@ -5,6 +5,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { CalculationResults, Isotope, Unit, Protocol } from '../types';
 import { formatActivity } from '../lib/units';
 import { organAbsorbedDose, isDoseAboveAlert, resolveEffectiveCoefficient, resolveOrganCoefficients, isTherapeuticProtocol } from '../lib/dosimetry';
+import { useConfig } from '../lib/ConfigContext';
 import { Card, SectionHeading, IconButton, Pill } from './ui';
 
 interface ResultDisplayProps {
@@ -21,8 +22,9 @@ export const ResultDisplay: React.FC<ResultDisplayProps> = ({ results, isotope, 
   const [showQR, setShowQR] = useState(false);
   const [showDoseChart, setShowDoseChart] = useState(false);
 
+  const config = useConfig();
   const isTherapy = isTherapeuticProtocol(isotope, protocol);
-  const isDoseHigh = isDoseAboveAlert(results.estimatedEffectiveDose, isotope, protocol);
+  const isDoseHigh = isDoseAboveAlert(results.estimatedEffectiveDose, isotope, protocol, config.diagnosticDoseAlertMSv);
   const coeff =
     results.effectiveCoefficientUsed ??
     resolveEffectiveCoefficient(isotope, protocol, { thyroidBlocked: results.thyroidBlocked });

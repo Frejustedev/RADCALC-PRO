@@ -22,6 +22,7 @@ import { Segmented, focusRing } from './components/ui';
 import { ISOTOPES } from './constants';
 import { recommendActivity, resolveEffectiveCoefficient, resolveOrganCoefficients, organAbsorbedDose, calculateBSA, calculateCreatinineClearance, PEDIATRIC_AGE_THRESHOLD } from './lib/dosimetry';
 import { useAuth } from './lib/AuthContext';
+import { useConfig } from './lib/ConfigContext';
 import { useActivePatient } from './lib/ActivePatientContext';
 import { createExam } from './lib/db';
 import { cn } from './lib/cn';
@@ -37,6 +38,7 @@ const SECTIONS: SectionDef[] = [
 
 export default function App() {
   const { profile, hasPermission } = useAuth();
+  const config = useConfig();
   const { patient: activePatient, setPatient: setActivePatient } = useActivePatient();
   const [legalPage, setLegalPage] = useState<LegalPage>(null);
   const [unit, setUnit] = useState<Unit>('MBq');
@@ -99,6 +101,13 @@ export default function App() {
       dose: organAbsorbedDose(rec.activityMBq, od.coefficientMGyPerMBq),
     }));
 
+    // Local DRL (Diagnostic Reference Level) check — admin-configurable, no recompilation.
+    const drl = config.drls?.[selectedProtocol.id];
+    const warnings = [...rec.warnings];
+    if (drl && drl > 0 && rec.activityMBq > drl) {
+      warnings.push(`Activité (${rec.activityMBq.toFixed(0)} MBq) au-dessus du DRL local (${drl} MBq) : à justifier.`);
+    }
+
     setResults((prev) => ({
       ...prev,
       recommendedActivity: rec.activityMBq,
@@ -110,7 +119,7 @@ export default function App() {
       thyroidBlocked: selectedIsotope.id === 'i131' ? thyroidBlocked : undefined,
       renalAdjustmentFactor: rec.renalAdjustmentFactor,
       pediatricFloorApplied: rec.pediatricFloorApplied,
-      warnings: rec.warnings,
+      warnings,
       isPregnant: patientData.isPregnant,
       isBreastfeeding: patientData.isBreastfeeding,
     }));
@@ -124,6 +133,7 @@ export default function App() {
     selectedProtocol,
     isDigitalPET,
     thyroidBlocked,
+    config,
   ]);
 
   useEffect(() => {

@@ -170,6 +170,17 @@ export interface Exam {
   createdAt: string;
 }
 
+/** Center-editable configuration (Firestore config/center) — no recompilation needed. */
+export interface CenterConfig {
+  /** Overrides the default diagnostic effective-dose alert threshold (mSv). */
+  diagnosticDoseAlertMSv?: number;
+  /** Local Diagnostic Reference Levels: protocolId → activity (MBq). */
+  drls?: Record<string, number>;
+  updatedBy?: string;
+  updatedByName?: string;
+  updatedAt?: string;
+}
+
 export interface VialData {
   activity: number; // expressed in the currently selected display Unit
   volume: number; // mL

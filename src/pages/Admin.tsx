@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { ShieldCheck, Loader2, CheckCircle2, XCircle } from 'lucide-react';
 import { Navbar } from '../components/Navbar';
+import { CenterConfigEditor } from '../components/CenterConfigEditor';
 import { Card, Pill, focusRing } from '../components/ui';
 import { useAuth } from '../lib/AuthContext';
 import { subscribeUsers, setUserRole, setUserActive } from '../lib/db';
@@ -48,6 +49,8 @@ export const Admin: React.FC = () => {
             <button onClick={() => setError(null)} className="font-bold hover:text-rose-300">✕</button>
           </div>
         )}
+
+        <CenterConfigEditor />
 
         {/* Role legend */}
         <Card className="mb-6 p-4">
