@@ -1,6 +1,7 @@
 {
   "firestore": {
     "database": "radcalc-pro",
-    "rules": "firestore.rules"
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
   }
 }
