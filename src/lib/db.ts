@@ -10,12 +10,13 @@ import {
   deleteDoc,
   onSnapshot,
   query,
+  where,
   orderBy,
   QuerySnapshot,
   DocumentData,
 } from 'firebase/firestore';
 import { db } from './firebase';
-import { Patient, Exam, Vial, UserProfile, ExamStatus } from '../types';
+import { Patient, Exam, Vial, UserProfile, ExamStatus, ExamAdministration, SafetyChecks } from '../types';
 import { Role } from './roles';
 
 /** Remove undefined fields — Firestore rejects them. */
@@ -47,8 +48,11 @@ export const createPatient = async (
   return ref.id;
 };
 
-export const updatePatient = async (id: string, data: Partial<Patient>): Promise<void> => {
-  await updateDoc(doc(db, 'patients', id), clean({ ...data, updatedAt: new Date().toISOString() }));
+export const subscribePatient = (id: string, cb: (p: Patient | null) => void, onError?: (e: Error) => void) =>
+  onSnapshot(doc(db, 'patients', id), (s) => cb(s.exists() ? ({ id: s.id, ...s.data() } as Patient) : null), onError);
+
+export const updatePatient = async (id: string, data: Partial<Patient>, actor: Actor): Promise<void> => {
+  await updateDoc(doc(db, 'patients', id), clean({ ...data, updatedBy: actor.uid, updatedByName: actor.name, updatedAt: new Date().toISOString() }));
 };
 
 export const deletePatient = (id: string): Promise<void> => deleteDoc(doc(db, 'patients', id));
@@ -57,6 +61,14 @@ export const deletePatient = (id: string): Promise<void> => deleteDoc(doc(db, 'p
 
 export const subscribeExams = (cb: (exams: Exam[]) => void, onError?: (e: Error) => void) =>
   onSnapshot(query(collection(db, 'exams'), orderBy('createdAt', 'desc')), (s) => cb(mapDocs<Exam>(s)), onError);
+
+/** Bounded, patient-scoped exam query (server-side filter, not client slicing). */
+export const subscribeExamsByPatient = (patientId: string, cb: (exams: Exam[]) => void, onError?: (e: Error) => void) =>
+  onSnapshot(
+    query(collection(db, 'exams'), where('patientId', '==', patientId), orderBy('createdAt', 'desc')),
+    (s) => cb(mapDocs<Exam>(s)),
+    onError,
+  );
 
 export const createExam = async (
   data: Omit<Exam, 'id' | 'performedBy' | 'performedByName' | 'createdAt' | 'status'>,
@@ -79,6 +91,25 @@ export const validateExam = (id: string, actor: Actor): Promise<void> =>
     validatedByName: actor.name,
     validatedAt: new Date().toISOString(),
   });
+
+/** Record the measured post-injection administration on a draft exam (radioprotection trace). */
+export const recordAdministration = (
+  id: string,
+  data: Omit<ExamAdministration, 'recordedBy' | 'recordedByName' | 'recordedAt'>,
+  actor: Actor,
+): Promise<void> =>
+  updateDoc(doc(db, 'exams', id), {
+    administration: clean({
+      ...data,
+      recordedBy: actor.uid,
+      recordedByName: actor.name,
+      recordedAt: new Date().toISOString(),
+    }),
+  });
+
+/** Persist the safety checklist on a draft exam (each item attributed & timestamped). */
+export const updateSafetyChecks = (id: string, safetyChecks: SafetyChecks): Promise<void> =>
+  updateDoc(doc(db, 'exams', id), { safetyChecks });
 
 export const deleteExam = (id: string): Promise<void> => deleteDoc(doc(db, 'exams', id));
 

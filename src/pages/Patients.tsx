@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Users, Plus, Search, Pencil, Trash2, Calculator, X, Loader2, UserPlus } from 'lucide-react';
 import { Navbar } from '../components/Navbar';
 import { Card, focusRing } from '../components/ui';
@@ -97,12 +97,12 @@ export const Patients: React.FC = () => {
             {filtered.map((p) => (
               <Card key={p.id} className="p-4 flex flex-col gap-3">
                 <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <p className="font-bold text-slate-100">{p.lastName.toUpperCase()} {p.firstName}</p>
+                  <Link to={`/patients/${p.id}`} className={cn('min-w-0 rounded', focusRing)}>
+                    <p className="font-bold text-slate-100 hover:text-emerald-400 transition-colors truncate">{p.lastName.toUpperCase()} {p.firstName}</p>
                     <p className="text-[11px] text-slate-500 font-mono">
                       {p.dossierNumber ? `Dossier ${p.dossierNumber} • ` : ''}{p.gender === 'M' ? 'H' : 'F'} • {p.age} ans
                     </p>
-                  </div>
+                  </Link>
                   <div className="flex gap-1">
                     {canWrite && (
                       <button onClick={() => setEditing(p)} className={cn('p-1.5 text-slate-500 hover:text-emerald-400 rounded-lg transition-colors', focusRing)} aria-label="Modifier"><Pencil className="w-4 h-4" /></button>
@@ -168,7 +168,7 @@ const PatientFormModal: React.FC<{ draft: Draft; actor: { uid: string; name: str
       notes: form.notes,
     };
     try {
-      if (isEdit) await updatePatient(draft.id!, payload);
+      if (isEdit) await updatePatient(draft.id!, payload, actor);
       else await createPatient(payload, actor);
       onClose();
     } catch {

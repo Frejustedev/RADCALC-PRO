@@ -59,6 +59,7 @@ export default function App() {
 
   const [isDigitalPET, setIsDigitalPET] = useState(false);
   const [thyroidBlocked, setThyroidBlocked] = useState(false);
+  const [plannedInjectionTime, setPlannedInjectionTime] = useState('');
 
   // Load the patient selected on the Patients page into the calculator inputs.
   useEffect(() => {
@@ -160,7 +161,8 @@ export default function App() {
           protocolName: selectedProtocol.name,
           unit,
           recommendedActivityMBq: results.recommendedActivity,
-          administeredActivityMBq: results.initialActivityNeeded || results.recommendedActivity,
+          plannedDrawActivityMBq: results.initialActivityNeeded || results.recommendedActivity,
+          plannedInjectionTime: plannedInjectionTime ? new Date(plannedInjectionTime).toISOString() : undefined,
           effectiveDoseMSv: results.estimatedEffectiveDose,
           effectiveCoefficientUsed: results.effectiveCoefficientUsed,
           isDigitalPET: results.isDigitalPET,
@@ -363,6 +365,19 @@ export default function App() {
                 canSave={canSaveExam}
                 saveState={saveState}
               />
+
+              {activePatient && canSaveExam && (
+                <div className="flex items-center gap-3 -mt-4 px-1 print:hidden">
+                  <label htmlFor="planned-time" className="text-xs text-slate-500 font-medium whitespace-nowrap">Injection prévue :</label>
+                  <input
+                    id="planned-time"
+                    type="datetime-local"
+                    value={plannedInjectionTime}
+                    onChange={(e) => setPlannedInjectionTime(e.target.value)}
+                    className={cn('flex-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-200 focus:ring-2 focus:ring-emerald-500 outline-none', focusRing)}
+                  />
+                </div>
+              )}
 
               <HumanSilhouette organDoses={resolveOrganCoefficients(selectedIsotope, selectedProtocol, { thyroidBlocked })} activity={results.recommendedActivity} />
 

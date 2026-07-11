@@ -72,10 +72,11 @@ service cloud.firestore {
       // Creator is bound to the caller.
       allow create: if hasAnyRole(['admin', 'medecin', 'radiopharmacien', 'manipulateur'])
         && request.resource.data.createdBy == request.auth.uid;
-      // Provenance is frozen on update.
+      // Provenance frozen; every edit is attributed to the caller (updatedBy).
       allow update: if hasAnyRole(['admin', 'medecin', 'radiopharmacien', 'manipulateur'])
         && request.resource.data.createdBy == resource.data.createdBy
-        && request.resource.data.createdAt == resource.data.createdAt;
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.updatedBy == request.auth.uid;
       allow delete: if hasAnyRole(['admin', 'medecin', 'radiopharmacien', 'manipulateur']);
     }
 
@@ -86,13 +87,20 @@ service cloud.firestore {
       allow create: if hasAnyRole(['admin', 'medecin', 'radiopharmacien', 'manipulateur'])
         && request.resource.data.performedBy == request.auth.uid
         && request.resource.data.status == 'draft';
-      // ONLY a one-way draft→validated transition; the validator is pinned and every
-      // dosimetry/audit field is frozen (hasOnly on the changed keys).
+      // Validation: ONLY a one-way draft→validated transition; validator pinned and every
+      // dosimetry/audit field frozen (hasOnly on the changed keys).
       allow update: if hasAnyRole(['admin', 'medecin', 'radiopharmacien'])
         && resource.data.status == 'draft'
         && request.resource.data.status == 'validated'
         && request.resource.data.validatedBy == request.auth.uid
         && changedKeys().hasOnly(['status', 'validatedBy', 'validatedByName', 'validatedAt']);
+      // Draft edits: post-injection administration, safety checklist, planned time.
+      // Exam must stay draft; performer frozen; dosimetry/identity fields cannot change.
+      allow update: if hasAnyRole(['admin', 'medecin', 'radiopharmacien', 'manipulateur'])
+        && resource.data.status == 'draft'
+        && request.resource.data.status == 'draft'
+        && request.resource.data.performedBy == resource.data.performedBy
+        && changedKeys().hasOnly(['administration', 'safetyChecks', 'plannedInjectionTime']);
       allow delete: if isAdmin();
     }
 

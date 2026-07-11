@@ -1,6 +1,6 @@
 {
   "firestore": {
-    "database": "ai-studio-77e401c9-98b2-4e02-9088-8a3ea6d17150",
+    "database": "radcalc-pro",
     "rules": "firestore.rules"
   }
 }

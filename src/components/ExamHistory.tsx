@@ -1,26 +1,25 @@
 import React, { useEffect, useState } from 'react';
-import { History, FileSpreadsheet, BadgeCheck, Loader2, ClipboardCheck } from 'lucide-react';
+import { History, FileSpreadsheet, BadgeCheck, Loader2, Syringe } from 'lucide-react';
 import { Exam, Unit } from '../types';
-import { subscribeExams, validateExam } from '../lib/db';
+import { subscribeExams } from '../lib/db';
 import { useAuth } from '../lib/AuthContext';
 import { formatActivity } from '../lib/units';
+import { areRequiredChecksDone } from '../lib/safety';
 import { Card, SectionHeading, Pill, focusRing } from './ui';
+import { ExamDetailModal } from './ExamDetailModal';
 import { cn } from '../lib/cn';
 
 const DISPLAY_LIMIT = 25;
 
 export const ExamHistory: React.FC = () => {
-  const { profile, hasPermission } = useAuth();
+  useAuth();
   const [exams, setExams] = useState<Exam[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const canValidate = hasPermission('exams:validate');
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const selected = exams.find((e) => e.id === selectedId) ?? null;
 
   useEffect(() => subscribeExams((list) => { setExams(list); setLoading(false); }, () => { setError('Examens indisponibles (droits ou connexion).'); setLoading(false); }), []);
-
-  const validate = (id: string) => {
-    if (profile && canValidate) validateExam(id, { uid: profile.uid, name: profile.displayName }).catch(() => setError('Validation impossible.'));
-  };
 
   const exportCSV = () => {
     const headers = ['Date', 'Patient', 'Isotope', 'Protocole', 'Activite', 'Unite', 'DoseEff(mSv)', 'Coeff', 'ThyroideBloquee', 'Statut', 'RealisePar', 'ValidePar'];
@@ -78,7 +77,11 @@ export const ExamHistory: React.FC = () => {
       ) : (
         <div className="space-y-3 max-h-[420px] overflow-y-auto pr-2 custom-scrollbar">
           {exams.slice(0, DISPLAY_LIMIT).map((e) => (
-            <div key={e.id} className="p-4 bg-slate-800/30 border border-slate-800 rounded-xl hover:border-slate-700 transition-colors">
+            <button
+              key={e.id}
+              onClick={() => setSelectedId(e.id)}
+              className={cn('w-full text-left p-4 bg-slate-800/30 border border-slate-800 rounded-xl hover:border-slate-700 transition-colors', focusRing)}
+            >
               <div className="flex justify-between items-start mb-1.5 gap-2">
                 <div className="min-w-0">
                   <p className="text-sm font-bold text-slate-200 truncate">{e.patientName}</p>
@@ -96,16 +99,16 @@ export const ExamHistory: React.FC = () => {
                   {' • '}<span className="text-emerald-400 font-mono">{e.effectiveDoseMSv.toFixed(2)} mSv</span>
                   <span className="block text-slate-600 mt-0.5">par {e.performedByName} · {new Date(e.createdAt).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}</span>
                 </div>
-                {canValidate && e.status === 'draft' && (
-                  <button onClick={() => validate(e.id)} className={cn('flex items-center gap-1 px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-[11px] font-bold transition-colors shrink-0', focusRing)}>
-                    <ClipboardCheck className="w-3.5 h-3.5" /> Valider
-                  </button>
-                )}
+                <div className="flex flex-col items-end gap-1 shrink-0">
+                  {e.administration && <Pill tone="indigo"><Syringe className="w-3 h-3" /> Administré</Pill>}
+                  {e.status === 'draft' && !areRequiredChecksDone(e.safetyChecks) && <Pill tone="rose">Contrôles ⌛</Pill>}
+                </div>
               </div>
-            </div>
+            </button>
           ))}
         </div>
       )}
+      {selected && <ExamDetailModal exam={selected} onClose={() => setSelectedId(null)} />}
     </Card>
   );
 };

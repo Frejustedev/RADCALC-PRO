@@ -97,10 +97,34 @@ export interface Patient {
   createdBy: string;
   createdByName?: string;
   createdAt: string;
+  updatedBy?: string;
+  updatedByName?: string;
   updatedAt: string;
 }
 
 export type ExamStatus = 'draft' | 'validated';
+
+/** Post-injection reconciliation — the *measured* administration, not the planned calculation. */
+export interface ExamAdministration {
+  administeredActivityMBq: number; // measured at the activity meter (pre-injection)
+  residualActivityMBq?: number; // residual left in syringe/line after injection
+  netActivityMBq?: number; // administered − residual (what the patient actually received)
+  actualInjectionTime: string; // ISO
+  vialLotNumber?: string;
+  route?: string; // IV, orale, inhalation…
+  recordedBy: string;
+  recordedByName: string;
+  recordedAt: string;
+}
+
+export interface SafetyCheckItem {
+  checked: boolean;
+  checkedBy?: string;
+  checkedByName?: string;
+  checkedAt?: string;
+}
+
+export type SafetyChecks = Record<string, SafetyCheckItem>;
 
 export interface Exam {
   id: string;
@@ -112,8 +136,8 @@ export interface Exam {
   protocolName: string;
   unit: Unit;
   recommendedActivityMBq: number;
-  /** Decay-corrected activity to draw at the planned injection time (if a delay was set). */
-  administeredActivityMBq?: number;
+  /** Decay-corrected activity to DRAW at the planned injection time (planned, not measured). */
+  plannedDrawActivityMBq?: number;
   effectiveDoseMSv: number;
   effectiveCoefficientUsed?: number;
   isDigitalPET?: boolean;
@@ -132,6 +156,12 @@ export interface Exam {
     isBreastfeeding?: boolean;
   };
   status: ExamStatus;
+  /** Planned injection time captured at save (drives decay-corrected activity to draw). */
+  plannedInjectionTime?: string;
+  /** Post-injection reconciliation (measured activity, residual, actual time, lot). */
+  administration?: ExamAdministration;
+  /** Radioprotection / identitovigilance safety checklist (persisted & attributed). */
+  safetyChecks?: SafetyChecks;
   performedBy: string;
   performedByName: string;
   validatedBy?: string;

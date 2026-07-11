@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink, Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
-import { Activity, BookOpen, Calculator, Home, Menu, X, Sun, Moon, Users, ShieldCheck, LogOut, LogIn } from 'lucide-react';
+import { Activity, BookOpen, Calculator, Home, Menu, X, Sun, Moon, Users, ShieldCheck, LogOut, LogIn, BarChart3 } from 'lucide-react';
 import { useTheme } from '../ThemeContext';
 import { useAuth } from '../lib/AuthContext';
 import { ROLE_LABELS, ROLE_BADGE_TONE } from '../lib/roles';
@@ -32,6 +32,7 @@ export const Navbar: React.FC = () => {
     { to: '/', label: 'Accueil', icon: Home, end: true, show: true },
     { to: '/app', label: 'Calculateur', icon: Calculator, end: false, show: true },
     { to: '/patients', label: 'Patients', icon: Users, end: false, show: hasPermission('patients:read') },
+    { to: '/dashboard', label: 'Tableau de bord', icon: BarChart3, end: false, show: hasPermission('exams:read') },
     { to: '/admin', label: 'Comptes', icon: ShieldCheck, end: false, show: hasPermission('users:manage') },
     { to: '/docs', label: 'Documentation', icon: BookOpen, end: false, show: true },
   ].filter((l) => l.show);
