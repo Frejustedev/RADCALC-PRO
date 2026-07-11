@@ -19,13 +19,14 @@ const ERRORS: Record<string, string> = {
 };
 
 export const Login: React.FC = () => {
-  const { user, login, register } = useAuth();
+  const { user, login, register, resetPassword } = useAuth();
   const location = useLocation();
   const [mode, setMode] = useState<'login' | 'register'>('login');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   if (!isFirebaseConfigured) return <FirebaseNotice />;
@@ -34,6 +35,7 @@ export const Login: React.FC = () => {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setNotice(null);
     setBusy(true);
     try {
       if (mode === 'login') await login(email, password);
@@ -42,6 +44,22 @@ export const Login: React.FC = () => {
       const code = (err as { code?: string })?.code ?? '';
       setError(ERRORS[code] ?? "Une erreur est survenue. Réessayez.");
       setBusy(false);
+    }
+  };
+
+  const forgot = async () => {
+    setError(null);
+    setNotice(null);
+    if (!email.trim()) {
+      setError('Saisissez votre email, puis cliquez sur « Mot de passe oublié ».');
+      return;
+    }
+    try {
+      await resetPassword(email);
+      setNotice('Email de réinitialisation envoyé (vérifiez vos courriers indésirables).');
+    } catch (err) {
+      const code = (err as { code?: string })?.code ?? '';
+      setError(ERRORS[code] ?? "Envoi impossible. Vérifiez l'email.");
     }
   };
 
@@ -97,6 +115,9 @@ export const Login: React.FC = () => {
                 <AlertTriangle className="w-4 h-4 shrink-0" /> {error}
               </div>
             )}
+            {notice && (
+              <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-emerald-400 text-xs">{notice}</div>
+            )}
 
             <button
               type="submit"
@@ -106,6 +127,12 @@ export const Login: React.FC = () => {
               {busy && <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none" />}
               {mode === 'login' ? 'Se connecter' : 'Créer mon compte'}
             </button>
+
+            {mode === 'login' && (
+              <button type="button" onClick={forgot} className={cn('w-full text-center text-[11px] text-slate-400 hover:text-emerald-400 transition-colors rounded py-1', focusRing)}>
+                Mot de passe oublié ?
+              </button>
+            )}
           </form>
 
           {mode === 'register' && (

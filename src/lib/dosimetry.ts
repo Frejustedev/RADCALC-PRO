@@ -5,7 +5,7 @@
  * in **mGy** and effective dose in **mSv**. Conversion to the user's display
  * unit happens only in the UI layer (see lib/units.ts).
  */
-import { Isotope, Protocol } from '../types';
+import { Isotope, Protocol, OrganDose } from '../types';
 import { getPediatricMultiplier } from '../constants';
 
 /** Digital PET sensitivity gain → ~40% activity reduction for 18F protocols. */
@@ -20,6 +20,9 @@ export const PEDIATRIC_AGE_THRESHOLD = 16;
 /** I-131 iodide effective-dose coefficients (mSv/MBq): functioning vs blocked thyroid (ICRP 128). */
 export const I131_COEFF_FUNCTIONING = 22;
 export const I131_COEFF_BLOCKED = 0.24;
+/** I-131 thyroid ABSORBED-dose coefficients (mGy/MBq): functioning (~35% uptake) vs blocked (ICRP 128). */
+export const I131_THYROID_MGY_FUNCTIONING = 430;
+export const I131_THYROID_MGY_BLOCKED = 2.2;
 
 // ── Radioactive decay ───────────────────────────────────────────────────────
 
@@ -272,9 +275,44 @@ export const estimateEffectiveDose = (
 export const organAbsorbedDose = (activityMBq: number, coefficientMGyPerMBq: number): number =>
   activityMBq * coefficientMGyPerMBq;
 
-/** Is the effective dose above the routine alert threshold for this isotope? */
-export const isDoseAboveAlert = (effectiveDoseMSv: number, isotope: Isotope): boolean =>
-  isotope.type !== 'Therapy' && effectiveDoseMSv > DIAGNOSTIC_DOSE_ALERT_MSV;
+/**
+ * Is this a therapeutic administration? Uses the explicit protocol intent, else falls back
+ * to a therapy isotope dosed at a fixed (ablative) activity.
+ */
+export const isTherapeuticProtocol = (isotope: Isotope, protocol?: Protocol): boolean => {
+  if (protocol?.intent) return protocol.intent === 'therapeutic';
+  return isotope.type === 'Therapy' && protocol?.fixedActivityMBq !== undefined;
+};
+
+/**
+ * Dose-alert on clinical INTENT, not isotope type: a *diagnostic* I-131 thyroid scan
+ * genuinely reaches ~150 mSv and MUST alert, while a therapeutic administration does not
+ * use the effective-dose alert at all (organ absorbed dose governs).
+ */
+export const isDoseAboveAlert = (
+  effectiveDoseMSv: number,
+  isotope: Isotope,
+  protocol?: Protocol,
+): boolean => !isTherapeuticProtocol(isotope, protocol) && effectiveDoseMSv > DIAGNOSTIC_DOSE_ALERT_MSV;
+
+/**
+ * Organ absorbed-dose coefficients for the scenario. For I-131 the thyroid coefficient
+ * tracks the same thyroid-blocked flag as the effective dose (~195× difference), so the
+ * organ chart can never contradict the effective dose shown next to it.
+ */
+export const resolveOrganCoefficients = (
+  isotope: Isotope,
+  protocol?: Protocol,
+  opts?: { thyroidBlocked?: boolean },
+): OrganDose[] => {
+  const base = protocol?.organDoses ?? isotope.organDoses ?? [];
+  if (isotope.id !== 'i131') return base;
+  return base.map((od) =>
+    od.organ === 'Thyroïde'
+      ? { ...od, coefficientMGyPerMBq: opts?.thyroidBlocked ? I131_THYROID_MGY_BLOCKED : I131_THYROID_MGY_FUNCTIONING }
+      : od,
+  );
+};
 
 /** Rule-of-thumb storage-for-decay duration: ~10 half-lives, expressed in days. */
 export const decayStorageDays = (halfLifeMinutes: number): number => (halfLifeMinutes * 10) / 1440;

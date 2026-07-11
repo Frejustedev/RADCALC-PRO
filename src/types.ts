@@ -15,6 +15,8 @@ export interface Protocol {
   name: string;
   activityMBqPerKg: number; // adult, weight-based
   description?: string;
+  /** Clinical intent — drives dose-alert logic (default 'diagnostic'). */
+  intent?: 'diagnostic' | 'therapeutic';
   /** Optional tracer-specific effective-dose coefficient (mSv/MBq); overrides the isotope default. */
   doseCoefficientMSvPerMBq?: number;
   /** Fixed adult activity (MBq) when dosing is not weight-based (e.g. DaTSCAN, therapy). */

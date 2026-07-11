@@ -63,10 +63,14 @@ export const ISOTOPES: Isotope[] = [
     commonUsage: "SPECT Scintigraphy",
     protocols: [
       { id: "bone-scan", name: "Scintigraphie Osseuse", activityMBqPerKg: 7.0, description: "Examen standard (HDP/MDP)", doseCoefficientMSvPerMBq: 0.0049, pediatric: { baselineMBq: 35, minMBq: 40, eanmClass: "B", source: "EANM card v5.7 — Tc-MDP" } },
-      { id: "myocardial", name: "Scintigraphie Myocardique", activityMBqPerKg: 8.0, description: "MIBI/tétrofosmine (repos)", doseCoefficientMSvPerMBq: 0.009, pediatric: { baselineMBq: 28, minMBq: 80, eanmClass: "B", source: "EANM card v5.7 — MIBI 1j repos" } },
-      { id: "renal-mag3", name: "Scintigraphie Rénale (MAG3)", activityMBqPerKg: 1.5, description: "Néphrologie", doseCoefficientMSvPerMBq: 0.007, pediatric: { baselineMBq: 11.9, minMBq: 15, eanmClass: "A", source: "EANM card v5.7 — Tc-MAG3 (classe A)" } },
+      { id: "myocardial", name: "Scintigraphie Myocardique (repos)", activityMBqPerKg: 8.0, description: "MIBI/tétrofosmine — repos", doseCoefficientMSvPerMBq: 0.009, pediatric: { baselineMBq: 28, minMBq: 80, eanmClass: "B", source: "EANM card v5.7 — MIBI 1j repos" } },
+      { id: "myocardial-stress", name: "Scintigraphie Myocardique (effort)", activityMBqPerKg: 8.0, description: "MIBI/tétrofosmine — effort/stress", doseCoefficientMSvPerMBq: 0.0079, pediatric: { baselineMBq: 84, minMBq: 80, eanmClass: "B", source: "EANM card v5.7 — MIBI 1j effort" } },
+      { id: "renal-mag3", name: "Scintigraphie Rénale (MAG3)", activityMBqPerKg: 1.5, description: "Néphrologie — fonction/drainage", doseCoefficientMSvPerMBq: 0.007, pediatric: { baselineMBq: 11.9, minMBq: 15, eanmClass: "A", source: "EANM card v5.7 — Tc-MAG3 (classe A)" } },
+      { id: "renal-dmsa", name: "Scintigraphie Rénale (DMSA)", activityMBqPerKg: 1.85, description: "Cortico-rénale (cicatrices)", doseCoefficientMSvPerMBq: 0.0088, pediatric: { baselineMBq: 6.8, minMBq: 18.5, eanmClass: "A", source: "EANM card v5.7 — Tc-DMSA (classe A)" } },
       { id: "thyroid-tc", name: "Scintigraphie Thyroïdienne", activityMBqPerKg: 1.0, description: "Pertechnétate (thyroïde non bloquée)", doseCoefficientMSvPerMBq: 0.013, pediatric: { baselineMBq: 5.6, minMBq: 10, eanmClass: "B", source: "EANM card v5.7 — pertechnétate" } },
-      { id: "lung-perf", name: "Perfusion Pulmonaire", activityMBqPerKg: 2.0, description: "Embolie pulmonaire (MAA)", doseCoefficientMSvPerMBq: 0.011, pediatric: { baselineMBq: 5.6, minMBq: 10, eanmClass: "B", source: "EANM card v5.7 — Tc-MAA" } },
+      { id: "lung-perf", name: "Perfusion Pulmonaire (MAA)", activityMBqPerKg: 2.0, description: "Embolie pulmonaire — perfusion", doseCoefficientMSvPerMBq: 0.011, pediatric: { baselineMBq: 5.6, minMBq: 10, eanmClass: "B", source: "EANM card v5.7 — Tc-MAA" } },
+      { id: "lung-vent", name: "Ventilation Pulmonaire", activityMBqPerKg: 0.4, description: "Aérosol/Technegas (DTPA)", doseCoefficientMSvPerMBq: 0.007, pediatric: { baselineMBq: 5.6, minMBq: 10, eanmClass: "B", source: "EANM card v5.7 — aérosol (à confirmer)" } },
+      { id: "sentinel", name: "Ganglion Sentinelle", activityMBqPerKg: 0.5, fixedActivityMBq: 40, description: "Nanocolloïde — repérage péri-tumoral (activité selon protocole)", doseCoefficientMSvPerMBq: 0.0018 },
     ],
     organDoses: [
       { organ: "Côlon", coefficientMGyPerMBq: 0.037 },
@@ -106,8 +110,8 @@ export const ISOTOPES: Isotope[] = [
     doseCoefficientMSvPerMBq: 22,
     commonUsage: "Thyroid Therapy/Imaging",
     protocols: [
-      { id: "thyroid-imaging", name: "Imagerie Thyroïdienne", activityMBqPerKg: 0.1, description: "Diagnostic (faible dose)" },
-      { id: "thyroid-therapy", name: "Thérapie Thyroïdienne", activityMBqPerKg: 50.0, fixedActivityMBq: 3700, description: "Ablation/Traitement — activité fixe/dosimétrique" },
+      { id: "thyroid-imaging", name: "Imagerie Thyroïdienne", activityMBqPerKg: 0.1, intent: "diagnostic", description: "Diagnostic (faible dose)" },
+      { id: "thyroid-therapy", name: "Thérapie Thyroïdienne", activityMBqPerKg: 50.0, fixedActivityMBq: 3700, intent: "therapeutic", description: "Ablation/Traitement — activité fixe/dosimétrique" },
     ],
     organDoses: [
       { organ: "Thyroïde", coefficientMGyPerMBq: 430 }, // ~35% uptake, ICRP 128
@@ -123,8 +127,8 @@ export const ISOTOPES: Isotope[] = [
     doseCoefficientMSvPerMBq: 0.13, // literature (ICRP 140 territory); therapy = absorbed-dose driven
     commonUsage: "Theranostics",
     protocols: [
-      { id: "psma-therapy", name: "Thérapie PSMA", activityMBqPerKg: 100, fixedActivityMBq: 7400, description: "Cancer de la prostate — 7,4 GBq/cycle (fixe/dosimétrique)" },
-      { id: "dotatate-therapy", name: "Thérapie DOTATATE", activityMBqPerKg: 100, fixedActivityMBq: 7400, description: "Tumeurs neuroendocrines — 7,4 GBq/cycle (fixe/dosimétrique)" },
+      { id: "psma-therapy", name: "Thérapie PSMA", activityMBqPerKg: 100, fixedActivityMBq: 7400, intent: "therapeutic", description: "Cancer de la prostate — 7,4 GBq/cycle (fixe/dosimétrique)" },
+      { id: "dotatate-therapy", name: "Thérapie DOTATATE", activityMBqPerKg: 100, fixedActivityMBq: 7400, intent: "therapeutic", description: "Tumeurs neuroendocrines — 7,4 GBq/cycle (fixe/dosimétrique)" },
     ],
     organDoses: [
       { organ: "Reins", coefficientMGyPerMBq: 0.65 },
@@ -148,6 +152,21 @@ export const ISOTOPES: Isotope[] = [
       { organ: "Cœur", coefficientMGyPerMBq: 0.17 },
       { organ: "Foie", coefficientMGyPerMBq: 0.12 },
       { organ: "Vessie", coefficientMGyPerMBq: 0.08 },
+    ]
+  },
+  {
+    id: "y90",
+    name: "Y-90 (Yttrium-90)",
+    type: "Therapy",
+    halfLifeMinutes: 3843.6, // 64.06 h
+    doseCoefficientMSvPerMBq: 0, // pure β⁻ therapy — pilotée par la dose absorbée, pas la dose efficace
+    commonUsage: "Radioembolisation (SIRT) / Radiosynoviorthèse",
+    protocols: [
+      { id: "sirt", name: "Radioembolisation hépatique (SIRT)", activityMBqPerKg: 20, fixedActivityMBq: 1500, intent: "therapeutic", description: "Microsphères — activité individualisée (BSA/partition), 1,5 GBq indicatif" },
+    ],
+    organDoses: [
+      { organ: "Foie", coefficientMGyPerMBq: 0.05 },
+      { organ: "Poumons", coefficientMGyPerMBq: 0.006 },
     ]
   },
 ];

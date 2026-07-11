@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Isotope } from '../types';
+import { OrganDose } from '../types';
 
 interface HumanSilhouetteProps {
-  isotope: Isotope;
+  organDoses: OrganDose[]; // resolved organ absorbed-dose coefficients (mGy/MBq)
   activity: number; // MBq
 }
 
-export const HumanSilhouette: React.FC<HumanSilhouetteProps> = ({ isotope, activity }) => {
+export const HumanSilhouette: React.FC<HumanSilhouetteProps> = ({ organDoses, activity }) => {
   const [hoveredOrgan, setHoveredOrgan] = useState<string | null>(null);
 
   // Simple organ positions (relative to 200x500 silhouette)
@@ -28,7 +28,7 @@ export const HumanSilhouette: React.FC<HumanSilhouetteProps> = ({ isotope, activ
   // Special case for bilateral organs
   const bilateralOrgans = ["Reins", "Poumons"];
 
-  const activeOrgans = isotope.organDoses || [];
+  const activeOrgans = organDoses;
 
   return (
     <div className="relative bg-slate-900/40 border border-slate-800 rounded-2xl p-4 flex flex-col items-center">

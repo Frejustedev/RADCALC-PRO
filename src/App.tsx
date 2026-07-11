@@ -20,7 +20,7 @@ import { Navbar } from './components/Navbar';
 import { SectionNav, SectionDef } from './components/SectionNav';
 import { Segmented, focusRing } from './components/ui';
 import { ISOTOPES } from './constants';
-import { recommendActivity, resolveEffectiveCoefficient, organAbsorbedDose, calculateBSA, calculateCreatinineClearance, PEDIATRIC_AGE_THRESHOLD } from './lib/dosimetry';
+import { recommendActivity, resolveEffectiveCoefficient, resolveOrganCoefficients, organAbsorbedDose, calculateBSA, calculateCreatinineClearance, PEDIATRIC_AGE_THRESHOLD } from './lib/dosimetry';
 import { useAuth } from './lib/AuthContext';
 import { useActivePatient } from './lib/ActivePatientContext';
 import { createExam } from './lib/db';
@@ -91,8 +91,9 @@ export default function App() {
 
     const coeff = resolveEffectiveCoefficient(selectedIsotope, selectedProtocol, { thyroidBlocked });
     const dose = rec.activityMBq * coeff;
-    const organSource = selectedProtocol.organDoses ?? selectedIsotope.organDoses;
-    const organDoses = organSource?.map((od) => ({
+    // Organ coefficients track the thyroid-blocked flag (I-131), so the organ chart can never
+    // contradict the effective dose shown beside it.
+    const organDoses = resolveOrganCoefficients(selectedIsotope, selectedProtocol, { thyroidBlocked }).map((od) => ({
       organ: od.organ,
       dose: organAbsorbedDose(rec.activityMBq, od.coefficientMGyPerMBq),
     }));
@@ -363,7 +364,7 @@ export default function App() {
                 saveState={saveState}
               />
 
-              <HumanSilhouette isotope={selectedIsotope} activity={results.recommendedActivity} />
+              <HumanSilhouette organDoses={resolveOrganCoefficients(selectedIsotope, selectedProtocol, { thyroidBlocked })} activity={results.recommendedActivity} />
 
               <SafetyChecklist
                 isPregnant={patientData.isPregnant}

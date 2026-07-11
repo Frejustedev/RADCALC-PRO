@@ -4,7 +4,7 @@ import { QRCodeSVG } from 'qrcode.react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { CalculationResults, Isotope, Unit, Protocol } from '../types';
 import { formatActivity } from '../lib/units';
-import { organAbsorbedDose, isDoseAboveAlert, resolveEffectiveCoefficient } from '../lib/dosimetry';
+import { organAbsorbedDose, isDoseAboveAlert, resolveEffectiveCoefficient, resolveOrganCoefficients, isTherapeuticProtocol } from '../lib/dosimetry';
 import { Card, SectionHeading, IconButton, Pill } from './ui';
 
 interface ResultDisplayProps {
@@ -21,13 +21,13 @@ export const ResultDisplay: React.FC<ResultDisplayProps> = ({ results, isotope, 
   const [showQR, setShowQR] = useState(false);
   const [showDoseChart, setShowDoseChart] = useState(false);
 
-  const isTherapy = isotope.type === 'Therapy';
-  const isDoseHigh = isDoseAboveAlert(results.estimatedEffectiveDose, isotope);
+  const isTherapy = isTherapeuticProtocol(isotope, protocol);
+  const isDoseHigh = isDoseAboveAlert(results.estimatedEffectiveDose, isotope, protocol);
   const coeff =
     results.effectiveCoefficientUsed ??
     resolveEffectiveCoefficient(isotope, protocol, { thyroidBlocked: results.thyroidBlocked });
 
-  const organSource = protocol.organDoses ?? isotope.organDoses ?? [];
+  const organSource = resolveOrganCoefficients(isotope, protocol, { thyroidBlocked: results.thyroidBlocked });
   const organDoses =
     results.organDoses ??
     organSource.map((od) => ({ organ: od.organ, dose: organAbsorbedDose(results.recommendedActivity, od.coefficientMGyPerMBq) }));
@@ -121,19 +121,27 @@ export const ResultDisplay: React.FC<ResultDisplayProps> = ({ results, isotope, 
 
           <div className="space-y-1">
             <span className="text-xs uppercase tracking-wider text-slate-500 font-bold flex items-center gap-1">
-              {isTherapy ? 'Dose Efficace (indicative)' : 'Dose Efficace Estimée'} <ShieldCheck className="w-3 h-3 print:hidden" />
+              Dose Efficace {isTherapy ? '' : 'Estimée'} <ShieldCheck className="w-3 h-3 print:hidden" />
             </span>
-            <div className="flex items-baseline gap-2">
-              <span className={`text-4xl font-mono font-bold ${isDoseHigh ? 'text-amber-400 print:text-amber-600' : 'text-emerald-400 print:text-emerald-600'}`}>
-                {results.estimatedEffectiveDose.toFixed(2)}
-              </span>
-              <span className="text-lg text-slate-500">mSv</span>
-            </div>
-            <p className="text-xs text-slate-500 italic">Coeff : {coeff} mSv/MBq</p>
-            {isTherapy && (
-              <p className="text-[10px] text-amber-400/80 mt-1 leading-snug">
-                En thérapie, la dose absorbée par l'organe cible (mGy) est la grandeur déterminante, pas la dose efficace.
-              </p>
+            {isTherapy ? (
+              <>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-3xl font-mono font-bold text-slate-500">N/A</span>
+                </div>
+                <p className="text-[10px] text-amber-400/90 mt-1 leading-snug">
+                  Grandeur non pertinente en thérapie : c'est la <b>dose absorbée à l'organe cible (mGy)</b> qui gouverne, définie par dosimétrie individuelle.
+                </p>
+              </>
+            ) : (
+              <>
+                <div className="flex items-baseline gap-2">
+                  <span className={`text-4xl font-mono font-bold ${isDoseHigh ? 'text-amber-400 print:text-amber-600' : 'text-emerald-400 print:text-emerald-600'}`}>
+                    {results.estimatedEffectiveDose.toFixed(2)}
+                  </span>
+                  <span className="text-lg text-slate-500">mSv</span>
+                </div>
+                <p className="text-xs text-slate-500 italic">Coeff : {coeff} mSv/MBq{results.thyroidBlocked !== undefined ? results.thyroidBlocked ? ' (thyroïde bloquée)' : ' (thyroïde fonctionnelle)' : ''}</p>
+              </>
             )}
           </div>
         </div>

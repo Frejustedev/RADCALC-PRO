@@ -13,9 +13,13 @@ import {
   resolveEffectiveCoefficient,
   organAbsorbedDose,
   isDoseAboveAlert,
+  isTherapeuticProtocol,
+  resolveOrganCoefficients,
   decayConstant,
   I131_COEFF_FUNCTIONING,
   I131_COEFF_BLOCKED,
+  I131_THYROID_MGY_FUNCTIONING,
+  I131_THYROID_MGY_BLOCKED,
 } from './dosimetry';
 import { ISOTOPES, getPediatricMultiplier } from '../constants';
 import { Isotope, Protocol } from '../types';
@@ -203,9 +207,28 @@ describe('effective dose & coefficients', () => {
     expect(organAbsorbedDose(100, 0.13)).toBeCloseTo(13, 6);
   });
 
-  it('dose alert only fires for diagnostic isotopes', () => {
+  it('dose alert fires on clinical INTENT, not isotope type', () => {
     expect(isDoseAboveAlert(20, iso('f18'))).toBe(true);
     expect(isDoseAboveAlert(10, iso('f18'))).toBe(false);
-    expect(isDoseAboveAlert(99999, iso('i131'))).toBe(false); // therapy → suppressed
+    // Diagnostic I-131 thyroid imaging (~154 mSv) MUST alert even though the isotope is "Therapy".
+    expect(isDoseAboveAlert(154, iso('i131'), proto('i131', 'thyroid-imaging'))).toBe(true);
+    // A therapeutic administration does not use the diagnostic effective-dose alert.
+    expect(isDoseAboveAlert(99999, iso('i131'), proto('i131', 'thyroid-therapy'))).toBe(false);
+  });
+
+  it('isTherapeuticProtocol distinguishes diagnostic vs therapeutic on the same isotope', () => {
+    expect(isTherapeuticProtocol(iso('i131'), proto('i131', 'thyroid-imaging'))).toBe(false);
+    expect(isTherapeuticProtocol(iso('i131'), proto('i131', 'thyroid-therapy'))).toBe(true);
+    expect(isTherapeuticProtocol(iso('lu177'), proto('lu177', 'psma-therapy'))).toBe(true);
+  });
+
+  it('REGRESSION: I-131 thyroid ORGAN dose follows the thyroidBlocked flag (mirrors effective dose)', () => {
+    const functioning = resolveOrganCoefficients(iso('i131'), proto('i131', 'thyroid-imaging'), { thyroidBlocked: false });
+    const blocked = resolveOrganCoefficients(iso('i131'), proto('i131', 'thyroid-imaging'), { thyroidBlocked: true });
+    const thyF = functioning.find((o) => o.organ === 'Thyroïde')!.coefficientMGyPerMBq;
+    const thyB = blocked.find((o) => o.organ === 'Thyroïde')!.coefficientMGyPerMBq;
+    expect(thyF).toBe(I131_THYROID_MGY_FUNCTIONING);
+    expect(thyB).toBe(I131_THYROID_MGY_BLOCKED);
+    expect(thyF / thyB).toBeGreaterThan(50); // no longer contradicts the ~90× effective-dose drop
   });
 });
